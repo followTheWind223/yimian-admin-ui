@@ -1,0 +1,219 @@
+import request from '../utils/request'
+import type { ApiResponse } from '../types/api'
+import type {
+  LoginParams,
+  LoginResult,
+  RegisterParams,
+  UserInfo,
+  UserQuery,
+  PageResult,
+  CreateUserParams,
+  UpdateUserParams,
+  ResetPasswordParams,
+  AssignRoleParams,
+  UpdateProfileParams,
+  ChangePasswordParams,
+  Role,
+  CreateRoleParams,
+  UpdateRoleParams,
+  AssignPermParams,
+  Permission,
+  CreatePermissionParams,
+  UpdatePermissionParams,
+  OperationLog,
+  LogQuery,
+  LogModule,
+  CreateLogModuleParams,
+  UpdateLogModuleParams,
+  FileVO,
+  Knowledge,
+  KnowledgeQuery,
+  BatchAuditParams,
+  Blog,
+  BlogQuery,
+  Topic,
+  TopicParams,
+} from '../types/api'
+import type { Tag, CreateTagParams, UpdateTagParams } from './tag'
+
+// ==================== 认证 ====================
+export function loginApi(data: LoginParams) {
+  return request.post<ApiResponse<LoginResult>>('/auth/login', data)
+}
+export function adminLoginApi(data: LoginParams) {
+  return request.post<ApiResponse<LoginResult>>('/auth/admin/login', data)
+}
+export function registerApi(data: RegisterParams) {
+  return request.post<ApiResponse<UserInfo>>('/auth/register', data)
+}
+
+// ==================== 个人中心 ====================
+export function getProfileApi() {
+  return request.get<ApiResponse<UserInfo>>('/user/profile')
+}
+export function updateProfileApi(data: UpdateProfileParams) {
+  return request.put<ApiResponse<UserInfo>>('/user/profile', data)
+}
+export function changePasswordApi(data: ChangePasswordParams) {
+  return request.put<ApiResponse<null>>('/user/password', data)
+}
+
+// ==================== 用户管理 ====================
+export function getUserListApi(params: UserQuery) {
+  return request.get<ApiResponse<PageResult<UserInfo>>>('/admin/users', { params })
+}
+export function getUserDetailApi(id: number) {
+  return request.get<ApiResponse<UserInfo>>(`/admin/users/${id}`)
+}
+export function createUserApi(data: CreateUserParams) {
+  return request.post<ApiResponse<UserInfo>>('/admin/users', data)
+}
+export function updateUserApi(id: number, data: UpdateUserParams) {
+  return request.put<ApiResponse<UserInfo>>(`/admin/users/${id}`, data)
+}
+export function resetPasswordApi(id: number, data: ResetPasswordParams) {
+  return request.put<ApiResponse<null>>(`/admin/users/${id}/password`, data)
+}
+export function deleteUserApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/users/${id}`)
+}
+export function assignRolesApi(id: number, data: AssignRoleParams) {
+  return request.put<ApiResponse<UserInfo>>(`/admin/users/${id}/roles`, data)
+}
+
+// ==================== 角色管理 ====================
+export function getRoleListApi() {
+  return request.get<ApiResponse<Role[]>>('/admin/roles')
+}
+export function getRoleDetailApi(id: number) {
+  return request.get<ApiResponse<Role>>(`/admin/roles/${id}`)
+}
+export function createRoleApi(data: CreateRoleParams) {
+  return request.post<ApiResponse<Role>>('/admin/roles', data)
+}
+export function updateRoleApi(id: number, data: UpdateRoleParams) {
+  return request.put<ApiResponse<Role>>(`/admin/roles/${id}`, data)
+}
+export function deleteRoleApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/roles/${id}`)
+}
+export function setRoleEnabledApi(id: number, enabled: boolean) {
+  return request.put<ApiResponse<Role>>(`/admin/roles/${id}/enabled`, null, { params: { enabled } })
+}
+export function getRolePermissionsApi(id: number) {
+  return request.get<ApiResponse<string[]>>(`/admin/roles/${id}/permissions`)
+}
+export function assignPermissionsApi(id: number, data: AssignPermParams) {
+  return request.put<ApiResponse<null>>(`/admin/roles/${id}/permissions`, data)
+}
+
+// ==================== 权限管理 ====================
+export function getPermissionListApi() {
+  return request.get<ApiResponse<Permission[]>>('/admin/permissions')
+}
+export function getPermissionDetailApi(id: number) {
+  return request.get<ApiResponse<Permission>>(`/admin/permissions/${id}`)
+}
+export function createPermissionApi(data: CreatePermissionParams) {
+  return request.post<ApiResponse<Permission>>('/admin/permissions', data)
+}
+export function updatePermissionApi(id: number, data: UpdatePermissionParams) {
+  return request.put<ApiResponse<Permission>>(`/admin/permissions/${id}`, data)
+}
+export function deletePermissionApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/permissions/${id}`)
+}
+export function setPermissionEnabledApi(id: number, enabled: boolean) {
+  return request.put<ApiResponse<Permission>>(`/admin/permissions/${id}/enabled`, null, { params: { enabled } })
+}
+
+// ==================== 操作日志 ====================
+export function getLogListApi(params: LogQuery) {
+  return request.get<ApiResponse<PageResult<OperationLog>>>('/admin/logs', { params })
+}
+
+// ==================== 日志模块字典 ====================
+export function getLogModuleListApi() {
+  return request.get<ApiResponse<LogModule[]>>('/admin/logs/modules')
+}
+export function getLogModuleEnabledApi() {
+  return request.get<ApiResponse<LogModule[]>>('/admin/logs/modules/enabled')
+}
+export function getLogModuleDetailApi(id: number) {
+  return request.get<ApiResponse<LogModule>>(`/admin/logs/modules/${id}`)
+}
+export function createLogModuleApi(data: CreateLogModuleParams) {
+  return request.post<ApiResponse<LogModule>>('/admin/logs/modules', data)
+}
+export function updateLogModuleApi(id: number, data: UpdateLogModuleParams) {
+  return request.put<ApiResponse<LogModule>>(`/admin/logs/modules/${id}`, data)
+}
+export function deleteLogModuleApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/logs/modules/${id}`)
+}
+
+// ==================== 标签管理 ====================
+export function getTagListApi() {
+  return request.get<ApiResponse<Tag[]>>('/tags')
+}
+export function createTagApi(data: CreateTagParams) {
+  return request.post<ApiResponse<Tag>>('/admin/tags', data)
+}
+export function updateTagApi(id: number, data: UpdateTagParams) {
+  return request.put<ApiResponse<Tag>>(`/admin/tags/${id}`, data)
+}
+export function deleteTagApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/tags/${id}`)
+}
+
+// ==================== 文件上传 ====================
+export function uploadFileApi(file: File, scene = 'common') {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('scene', scene)
+  return request.post<ApiResponse<FileVO>>('/file/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+// ==================== 知识管理（管理员） ====================
+export function getKnowledgeListApi(params?: KnowledgeQuery) {
+  return request.get<ApiResponse<PageResult<Knowledge>>>('/knowledge', { params })
+}
+export function getKnowledgePendingApi(params?: KnowledgeQuery) {
+  return request.get<ApiResponse<PageResult<Knowledge>>>('/admin/knowledge/pending', { params })
+}
+export function approveKnowledgeApi(id: number) {
+  return request.put<ApiResponse<Knowledge>>(`/admin/knowledge/${id}/approve`)
+}
+export function rejectKnowledgeApi(id: number, remark: string) {
+  return request.put<ApiResponse<Knowledge>>(`/admin/knowledge/${id}/reject`, null, { params: { remark } })
+}
+export function batchAuditApi(data: BatchAuditParams) {
+  return request.put<ApiResponse<number>>('/admin/knowledge/batch-audit', data)
+}
+
+// ==================== 博客管理（管理员） ====================
+export function getAdminBlogListApi(params?: BlogQuery) {
+  return request.get<ApiResponse<PageResult<Blog>>>('/admin/blogs', { params })
+}
+export function updateAdminBlogStatusApi(id: number, status: number) {
+  return request.put<ApiResponse<Blog>>(`/admin/blogs/${id}/status`, null, { params: { status } })
+}
+export function deleteAdminBlogApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/blogs/${id}`)
+}
+
+// ==================== 话题管理 ====================
+export function getTopicListApi(keyword?: string) {
+  return request.get<ApiResponse<Topic[]>>('/topics', { params: { keyword } })
+}
+export function createTopicApi(data: TopicParams) {
+  return request.post<ApiResponse<Topic>>('/admin/topics', null, { params: data })
+}
+export function updateTopicApi(id: number, data: TopicParams) {
+  return request.put<ApiResponse<Topic>>(`/admin/topics/${id}`, null, { params: data })
+}
+export function deleteTopicApi(id: number) {
+  return request.delete<ApiResponse<null>>(`/admin/topics/${id}`)
+}
