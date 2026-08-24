@@ -56,7 +56,10 @@
             <el-icon><Avatar /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
-          <el-menu-item index="/admin/agent-conversations" v-if="authStore.hasPermission('agent:conversation:list')">
+          <el-menu-item
+            index="/admin/agent-conversations"
+            v-if="authStore.isAdmin || authStore.hasPermission('agent:conversation:list')"
+          >
             <el-icon><ChatLineSquare /></el-icon>
             <span>AI 会话审计</span>
           </el-menu-item>

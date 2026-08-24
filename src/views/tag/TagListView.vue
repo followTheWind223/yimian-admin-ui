@@ -42,11 +42,20 @@
           <el-input v-model="form.name" placeholder="如 Java" maxlength="50" />
         </el-form-item>
         <el-form-item label="颜色" prop="color">
-          <el-input v-model="form.color" placeholder="#e74c3c">
-            <template #prefix>
-              <span :style="{ display:'inline-block', width:14, height:14, borderRadius:'50%', background: form.color, border:'1px solid #ddd', verticalAlign:'middle' }"></span>
-            </template>
-          </el-input>
+          <div class="color-field">
+            <el-color-picker
+              v-model="form.color"
+              color-format="hex"
+              :predefine="predefinedColors"
+              aria-label="选择标签颜色"
+            />
+            <el-input
+              v-model="form.color"
+              placeholder="#e74c3c"
+              maxlength="7"
+              @blur="normalizeColor"
+            />
+          </div>
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="form.sort" :min="0" :max="999" />
@@ -75,10 +84,18 @@ const formRef = ref<FormInstance>()
 const dialog = reactive({ visible: false, isEdit: false })
 const editId = ref<number | null>(null)
 const form = reactive({ name: '', color: '#6366f1', sort: 0 })
+const predefinedColors = [
+  '#e74c3c', '#f39c12', '#f1c40f', '#6db33f',
+  '#10b981', '#00add8', '#336791', '#3498db',
+  '#6366f1', '#9b59b6', '#ec4899', '#64748b',
+]
 
 const formRules: FormRules = {
   name: [{ required: true, message: '请输入标签名称', trigger: 'blur' }],
-  color: [{ required: true, message: '请输入颜色值', trigger: 'blur' }],
+  color: [
+    { required: true, message: '请选择颜色', trigger: ['blur', 'change'] },
+    { pattern: /^#[0-9a-fA-F]{6}$/, message: '颜色格式应为 #RRGGBB', trigger: ['blur', 'change'] },
+  ],
 }
 
 async function loadList() {
@@ -99,6 +116,11 @@ function openEdit(row: Tag) {
   form.name = row.name; form.color = row.color; form.sort = row.sort
 }
 function resetForm() { formRef.value?.resetFields() }
+
+function normalizeColor() {
+  const value = form.color.trim()
+  form.color = /^[0-9a-fA-F]{6}$/.test(value) ? `#${value}` : value
+}
 
 async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
@@ -129,3 +151,18 @@ async function handleDelete(id: number) {
 
 onMounted(loadList)
 </script>
+
+<style scoped>
+.color-field {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.color-field :deep(.el-color-picker__trigger) {
+  width: 40px;
+  height: 40px;
+}
+</style>
