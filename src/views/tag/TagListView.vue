@@ -8,7 +8,13 @@
         </div>
       </template>
       <el-table :data="list" v-loading="loading" stripe border>
-        <el-table-column prop="id" label="ID" width="70" align="center" />
+        <el-table-column prop="id" label="ID" width="140" align="center">
+          <template #default="{ row }">
+            <el-tooltip :content="String(row.id)" placement="top">
+              <span class="id-text">{{ formatId(row.id) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column prop="name" label="标签名称" min-width="160">
           <template #default="{ row }">
             <span :style="{ display:'inline-block', width:10, height:10, borderRadius:'50%', background: row.color, marginRight:8 }"></span>
@@ -75,6 +81,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getTagListApi, createTagApi, updateTagApi, deleteTagApi } from '../../api'
 import type { Tag } from '../../api/tag'
+import type { ApiId } from '../../types/api'
 
 const list = ref<Tag[]>([])
 const loading = ref(false)
@@ -82,7 +89,7 @@ const saving = ref(false)
 const formRef = ref<FormInstance>()
 
 const dialog = reactive({ visible: false, isEdit: false })
-const editId = ref<number | null>(null)
+const editId = ref<ApiId | null>(null)
 const form = reactive({ name: '', color: '#6366f1', sort: 0 })
 const predefinedColors = [
   '#e74c3c', '#f39c12', '#f1c40f', '#6db33f',
@@ -117,6 +124,11 @@ function openEdit(row: Tag) {
 }
 function resetForm() { formRef.value?.resetFields() }
 
+function formatId(id: ApiId) {
+  const value = String(id)
+  return value.length > 13 ? `${value.slice(0, 6)}...${value.slice(-4)}` : value
+}
+
 function normalizeColor() {
   const value = form.color.trim()
   form.color = /^[0-9a-fA-F]{6}$/.test(value) ? `#${value}` : value
@@ -141,7 +153,7 @@ async function handleSave() {
   finally { saving.value = false }
 }
 
-async function handleDelete(id: number) {
+async function handleDelete(id: ApiId) {
   try {
     await deleteTagApi(id)
     ElMessage.success('标签已删除')
@@ -164,5 +176,14 @@ onMounted(loadList)
 .color-field :deep(.el-color-picker__trigger) {
   width: 40px;
   height: 40px;
+}
+
+.id-text {
+  display: block;
+  overflow: hidden;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

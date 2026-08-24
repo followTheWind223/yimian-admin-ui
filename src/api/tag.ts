@@ -1,6 +1,8 @@
 // ==================== 标签管理 ====================
+import type { ApiId } from '../types/api'
+
 export interface Tag {
-  id: number
+  id: ApiId
   name: string
   color: string
   sort: number

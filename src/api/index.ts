@@ -189,10 +189,10 @@ export function getTagListApi() {
 export function createTagApi(data: CreateTagParams) {
   return request.post<ApiResponse<Tag>>('/admin/tags', data)
 }
-export function updateTagApi(id: number, data: UpdateTagParams) {
+export function updateTagApi(id: ApiId, data: UpdateTagParams) {
   return request.put<ApiResponse<Tag>>(`/admin/tags/${id}`, data)
 }
-export function deleteTagApi(id: number) {
+export function deleteTagApi(id: ApiId) {
   return request.delete<ApiResponse<null>>(`/admin/tags/${id}`)
 }
 
