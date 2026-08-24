@@ -142,12 +142,18 @@
     <el-dialog v-model="pwdDialog.visible" title="重置密码" width="400px">
       <el-form ref="pwdFormRef" :model="pwdDialog" :rules="pwdFormRules" label-width="80px">
         <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="pwdDialog.newPassword" type="password" show-password />
+          <el-input
+            v-model="pwdDialog.newPassword"
+            type="password"
+            show-password
+            autocomplete="new-password"
+            placeholder="6-32 位，包含大小写字母和数字"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="pwdDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="pwdDialog.loading" @click="submitResetPwd">确定</el-button>
+        <el-button type="primary" :loading="pwdDialog.loading" :disabled="pwdDialog.loading" @click="submitResetPwd">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -194,9 +200,15 @@ const dialog = reactive({ visible: false, isEdit: false, loading: false })
 const formRef = ref<FormInstance>()
 const editId = ref<ApiId | null>(null)
 const form = reactive<any>({ username: '', password: '', nickname: '', email: '', phone: '', status: 1, roleCodes: [] })
+const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/
+const PASSWORD_COMPLEXITY_MESSAGE = '密码必须包含至少一个大写字母、一个小写字母和一个数字'
 const formRules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }, { min: 6, max: 32, message: '6-32 字符', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 32, message: '密码长度必须为 6-32 位', trigger: 'blur' },
+    { pattern: PASSWORD_COMPLEXITY_PATTERN, message: PASSWORD_COMPLEXITY_MESSAGE, trigger: 'blur' },
+  ],
 }
 
 function resetForm() {
@@ -285,7 +297,11 @@ const pwdDialog = reactive<{ visible: boolean; loading: boolean; newPassword: st
 })
 const pwdFormRef = ref<FormInstance>()
 const pwdFormRules: FormRules = {
-  newPassword: [{ required: true, message: '请输入新密码', trigger: 'blur' }, { min: 6, max: 32, message: '6-32 字符', trigger: 'blur' }],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 32, message: '密码长度必须为 6-32 位', trigger: 'blur' },
+    { pattern: PASSWORD_COMPLEXITY_PATTERN, message: PASSWORD_COMPLEXITY_MESSAGE, trigger: 'blur' },
+  ],
 }
 function openResetPwd(row: UserInfo) {
   pwdDialog.userId = row.id
@@ -293,6 +309,7 @@ function openResetPwd(row: UserInfo) {
   pwdDialog.visible = true
 }
 async function submitResetPwd() {
+  if (pwdDialog.loading) return
   const valid = await pwdFormRef.value?.validate().catch(() => false)
   if (!valid || pwdDialog.userId == null) return
   pwdDialog.loading = true
@@ -300,6 +317,8 @@ async function submitResetPwd() {
     await resetPasswordApi(pwdDialog.userId, { newPassword: pwdDialog.newPassword })
     ElMessage.success('密码重置成功')
     pwdDialog.visible = false
+  } catch {
+    // 具体错误由请求拦截器统一提示，避免事件处理器产生未捕获异常。
   } finally {
     pwdDialog.loading = false
   }

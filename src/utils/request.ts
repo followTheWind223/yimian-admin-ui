@@ -42,7 +42,7 @@ instance.interceptors.response.use(
       } else if (status === 403) {
         ElMessage.error('没有访问权限')
       } else if (status === 400) {
-        ElMessage.error('请求参数错误')
+        ElMessage.error(error.response.data?.message || '请求参数错误')
       } else {
         ElMessage.error('服务器错误')
       }
