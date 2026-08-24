@@ -35,6 +35,12 @@ const router = createRouter({
           meta: { title: '用户管理', perm: 'user:list' },
         },
         {
+          path: 'agent-conversations',
+          name: 'AgentConversations',
+          component: () => import('../views/agent/AgentConversationView.vue'),
+          meta: { title: 'AI 会话审计', perm: 'agent:conversation:list' },
+        },
+        {
           path: 'roles',
           name: 'Roles',
           component: () => import('../views/role/RoleListView.vue'),

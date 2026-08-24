@@ -56,6 +56,10 @@
             <el-icon><Avatar /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
+          <el-menu-item index="/admin/agent-conversations" v-if="authStore.hasPermission('agent:conversation:list')">
+            <el-icon><ChatLineSquare /></el-icon>
+            <span>AI 会话审计</span>
+          </el-menu-item>
           <el-menu-item index="/admin/roles" v-if="authStore.hasPermission('role:list')">
             <el-icon><Key /></el-icon>
             <span>角色管理</span>
@@ -161,6 +165,7 @@ const canManageSystem = computed(() =>
   || authStore.hasPermission('log:list')
   || authStore.hasPermission('log:module:list')
   || authStore.hasPermission('announcement:list')
+  || authStore.hasPermission('agent:conversation:list')
   || authStore.isAdmin,
 )
 

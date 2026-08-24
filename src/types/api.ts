@@ -16,6 +16,83 @@ export interface PageResult<T> {
   size?: number
 }
 
+export interface AgentConversationStats {
+  sessionCount: number
+  activeSessionCount: number
+  supportSessionCount: number
+  quickSessionCount: number
+  messageCount: number
+  inputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  cachedInputTokens: number
+  totalTokens: number
+  estimatedMessageCount: number
+  totalCostUsd: number
+}
+
+export interface AgentConversationSession {
+  id: string
+  userId: string
+  sessionType: 'support' | 'quick'
+  scene: string
+  title: string | null
+  status: number
+  deleted: boolean
+  messageCount: number
+  inputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  cachedInputTokens: number
+  totalTokens: number
+  totalCostUsd: number
+  modelProvider: string | null
+  modelName: string | null
+  lastActiveAt: string
+  createdAt: string
+  archivedAt: string | null
+  deletedAt: string | null
+}
+
+export interface AgentConversationMessage {
+  id: string
+  sequenceNo: string
+  role: string
+  messageType: string
+  status: number
+  content: string | null
+  toolName: string | null
+  modelProvider: string | null
+  modelName: string | null
+  contentTokens: number
+  inputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  cachedInputTokens: number
+  totalTokens: number
+  tokenizerModel: string | null
+  tokenEstimated: boolean
+  latencyMs: number | null
+  costUsd: number
+  finishReason: string | null
+  errorCode: string | null
+  completedAt: string | null
+  createdAt: string
+}
+
+export interface AgentConversationDetail {
+  session: AgentConversationSession
+  messages: PageResult<AgentConversationMessage>
+}
+
+export interface AgentConversationQuery {
+  page: number
+  size: number
+  userId?: string
+  sessionType?: 'support' | 'quick'
+  status?: number
+}
+
 export interface UserInfo {
   id: ApiId
   username: string

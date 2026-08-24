@@ -39,6 +39,10 @@ import type {
   BlogQuery,
   Topic,
   TopicParams,
+  AgentConversationStats,
+  AgentConversationSession,
+  AgentConversationDetail,
+  AgentConversationQuery,
 } from '../types/api'
 import type { Tag, CreateTagParams, UpdateTagParams } from './tag'
 
@@ -248,4 +252,19 @@ export function updateTopicApi(id: number, data: TopicParams) {
 }
 export function deleteTopicApi(id: number) {
   return request.delete<ApiResponse<null>>(`/admin/topics/${id}`)
+}
+
+// ==================== Agent 会话审计 ====================
+export function getAgentConversationStatsApi() {
+  return request.get<ApiResponse<AgentConversationStats>>('/admin/agent/conversations/stats')
+}
+
+export function getAgentConversationListApi(params: AgentConversationQuery) {
+  return request.get<ApiResponse<PageResult<AgentConversationSession>>>('/admin/agent/conversations', { params })
+}
+
+export function getAgentConversationDetailApi(id: string, page = 1, size = 100) {
+  return request.get<ApiResponse<AgentConversationDetail>>(`/admin/agent/conversations/${id}`, {
+    params: { page, size },
+  })
 }
