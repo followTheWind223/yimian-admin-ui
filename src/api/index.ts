@@ -43,6 +43,8 @@ import type {
   AgentConversationSession,
   AgentConversationDetail,
   AgentConversationQuery,
+  AgentStatisticsPeriod,
+  AgentUsageAnalytics,
 } from '../types/api'
 import type { Tag, CreateTagParams, UpdateTagParams } from './tag'
 
@@ -266,5 +268,12 @@ export function getAgentConversationListApi(params: AgentConversationQuery) {
 export function getAgentConversationDetailApi(id: string, page = 1, size = 100) {
   return request.get<ApiResponse<AgentConversationDetail>>(`/admin/agent/conversations/${id}`, {
     params: { page, size },
+  })
+}
+
+// ==================== Agent 用量统计 ====================
+export function getAgentUsageAnalyticsApi(days: AgentStatisticsPeriod) {
+  return request.get<ApiResponse<AgentUsageAnalytics>>('/admin/agent/statistics/usage', {
+    params: { days },
   })
 }

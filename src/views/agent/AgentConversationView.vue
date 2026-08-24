@@ -3,42 +3,9 @@
     <section class="page-heading">
       <div>
         <h1>AI 会话审计</h1>
-        <p>查看小易的会话留存、消息状态和 Token 消耗。</p>
+        <p>按用户、会话类型和状态查询小易的完整会话记录。</p>
       </div>
       <el-button :icon="Refresh" :loading="loading" circle title="刷新数据" @click="refreshAll" />
-    </section>
-
-    <section class="metric-grid" v-loading="statsLoading">
-      <div class="metric-item">
-        <span>会话总数</span>
-        <strong>{{ formatNumber(stats.sessionCount) }}</strong>
-        <small>活跃 {{ formatNumber(stats.activeSessionCount) }}</small>
-      </div>
-      <div class="metric-item">
-        <span>消息总数</span>
-        <strong>{{ formatNumber(stats.messageCount) }}</strong>
-        <small>估算计数 {{ formatNumber(stats.estimatedMessageCount) }} 条</small>
-      </div>
-      <div class="metric-item metric-primary">
-        <span>Token 总量</span>
-        <strong>{{ formatNumber(stats.totalTokens) }}</strong>
-        <small>输入 {{ formatNumber(stats.inputTokens) }} / 输出 {{ formatNumber(stats.outputTokens) }}</small>
-      </div>
-      <div class="metric-item">
-        <span>用户会话</span>
-        <strong>{{ formatNumber(stats.supportSessionCount) }}</strong>
-        <small>进入正式会话记忆</small>
-      </div>
-      <div class="metric-item">
-        <span>快捷会话</span>
-        <strong>{{ formatNumber(stats.quickSessionCount) }}</strong>
-        <small>系统可见，记忆隔离</small>
-      </div>
-      <div class="metric-item">
-        <span>累计成本</span>
-        <strong>${{ formatCost(stats.totalCostUsd) }}</strong>
-        <small>按上游已记录用量</small>
-      </div>
     </section>
 
     <el-card class="search-card" shadow="never">
@@ -206,36 +173,17 @@ import { Refresh, RefreshRight, Search, View } from '@element-plus/icons-vue'
 import {
   getAgentConversationDetailApi,
   getAgentConversationListApi,
-  getAgentConversationStatsApi,
 } from '../../api'
 import type {
   AgentConversationDetail,
   AgentConversationQuery,
   AgentConversationSession,
-  AgentConversationStats,
 } from '../../types/api'
 
-const emptyStats: AgentConversationStats = {
-  sessionCount: 0,
-  activeSessionCount: 0,
-  supportSessionCount: 0,
-  quickSessionCount: 0,
-  messageCount: 0,
-  inputTokens: 0,
-  outputTokens: 0,
-  reasoningTokens: 0,
-  cachedInputTokens: 0,
-  totalTokens: 0,
-  estimatedMessageCount: 0,
-  totalCostUsd: 0,
-}
-
 const query = reactive<AgentConversationQuery>({ page: 1, size: 20 })
-const stats = reactive<AgentConversationStats>({ ...emptyStats })
 const sessions = ref<AgentConversationSession[]>([])
 const total = ref(0)
 const loading = ref(false)
-const statsLoading = ref(false)
 const detail = ref<AgentConversationDetail | null>(null)
 const drawer = reactive({ visible: false, loading: false, sessionId: '', page: 1, size: 100 })
 const viewportWidth = ref(window.innerWidth)
@@ -243,18 +191,6 @@ const drawerSize = computed(() => viewportWidth.value < 820 ? '100%' : '760px')
 
 function updateViewport() {
   viewportWidth.value = window.innerWidth
-}
-
-async function fetchStats() {
-  statsLoading.value = true
-  try {
-    const response = await getAgentConversationStatsApi()
-    Object.assign(stats, response.data.data)
-  } catch {
-    Object.assign(stats, emptyStats)
-  } finally {
-    statsLoading.value = false
-  }
 }
 
 async function fetchSessions() {
@@ -279,7 +215,7 @@ async function fetchSessions() {
 }
 
 async function refreshAll() {
-  await Promise.all([fetchStats(), fetchSessions()])
+  await fetchSessions()
 }
 
 function search() {
@@ -318,10 +254,6 @@ async function fetchDetail() {
 
 function formatNumber(value: number | null | undefined) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
-}
-
-function formatCost(value: number | null | undefined) {
-  return Number(value || 0).toFixed(6)
 }
 
 function formatDate(value: string | null | undefined) {
@@ -367,12 +299,6 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateViewport))
 .page-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .page-heading h1 { font-size: 24px; line-height: 1.25; }
 .page-heading p { margin-top: 6px; color: var(--color-text-secondary); font-size: 14px; }
-.metric-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; min-height: 116px; }
-.metric-item { min-width: 0; padding: 18px; background: #fff; border: 1px solid var(--color-border); border-radius: 8px; }
-.metric-item > span { display: block; color: var(--color-text-secondary); font-size: 13px; }
-.metric-item strong { display: block; margin: 10px 0 7px; color: #172033; font-size: 25px; line-height: 1; overflow-wrap: anywhere; }
-.metric-item small { display: block; color: #94a3b8; font-size: 12px; line-height: 1.45; }
-.metric-primary { border-color: rgba(99, 102, 241, 0.36); box-shadow: inset 3px 0 #6366f1; }
 .search-card { margin-bottom: 16px; }
 .search-card :deep(.el-card__body) { padding-bottom: 2px; }
 .table-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -405,12 +331,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateViewport))
 .message-item footer { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; border-top: 1px solid #eef2f7; color: #64748b; font-size: 12px; }
 .message-item .error-code { color: var(--color-danger); }
 
-@media (max-width: 1200px) {
-  .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
 @media (max-width: 700px) {
-  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .metric-item { padding: 15px; }
   .detail-summary { grid-template-columns: repeat(2, 1fr); }
   .detail-summary div:nth-child(2) { border-right: 0; }
   .detail-summary div:nth-child(-n + 2) { border-bottom: 1px solid var(--color-border); }

@@ -31,6 +31,62 @@ export interface AgentConversationStats {
   totalCostUsd: number
 }
 
+export type AgentStatisticsPeriod = 1 | 7 | 30
+
+export interface AgentUsageSummary {
+  sessionCount: number
+  activeUserCount: number
+  messageCount: number
+  inputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  cachedInputTokens: number
+  totalTokens: number
+  estimatedMessageCount: number
+  totalCostUsd: number
+  averageLatencyMs: number
+}
+
+export interface AgentTokenTrendPoint {
+  bucketStart: string
+  sessionCount: number
+  messageCount: number
+  inputTokens: number
+  outputTokens: number
+  reasoningTokens: number
+  cachedInputTokens: number
+  totalTokens: number
+  totalCostUsd: number
+}
+
+export interface AgentModelUsage {
+  modelProvider: string
+  modelName: string
+  messageCount: number
+  totalTokens: number
+  totalCostUsd: number
+  averageLatencyMs: number
+}
+
+export interface AgentSessionTypeUsage {
+  sessionType: string
+  sessionCount: number
+  messageCount: number
+  totalTokens: number
+  totalCostUsd: number
+}
+
+export interface AgentUsageAnalytics {
+  days: AgentStatisticsPeriod
+  granularity: 'hour' | 'day'
+  startAt: string
+  endAt: string
+  summary: AgentUsageSummary
+  tokenTrend: AgentTokenTrendPoint[]
+  modelUsage: AgentModelUsage[]
+  sessionTypeUsage: AgentSessionTypeUsage[]
+}
+
 export interface AgentConversationSession {
   id: string
   userId: string

@@ -47,6 +47,27 @@
           </el-menu-item>
         </el-sub-menu>
 
+        <el-sub-menu index="ai" v-if="canManageAi">
+          <template #title>
+            <el-icon><Cpu /></el-icon>
+            <span>AI 管理</span>
+          </template>
+          <el-menu-item
+            index="/admin/agent-statistics"
+            v-if="authStore.isAdmin || authStore.hasPermission('agent:statistics:view')"
+          >
+            <el-icon><DataAnalysis /></el-icon>
+            <span>AI 统计</span>
+          </el-menu-item>
+          <el-menu-item
+            index="/admin/agent-conversations"
+            v-if="authStore.isAdmin || authStore.hasPermission('agent:conversation:list')"
+          >
+            <el-icon><ChatLineSquare /></el-icon>
+            <span>会话审计</span>
+          </el-menu-item>
+        </el-sub-menu>
+
         <el-sub-menu index="system" v-if="canManageSystem">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -55,13 +76,6 @@
           <el-menu-item index="/admin/users" v-if="authStore.hasPermission('user:list')">
             <el-icon><Avatar /></el-icon>
             <span>用户管理</span>
-          </el-menu-item>
-          <el-menu-item
-            index="/admin/agent-conversations"
-            v-if="authStore.isAdmin || authStore.hasPermission('agent:conversation:list')"
-          >
-            <el-icon><ChatLineSquare /></el-icon>
-            <span>AI 会话审计</span>
           </el-menu-item>
           <el-menu-item index="/admin/roles" v-if="authStore.hasPermission('role:list')">
             <el-icon><Key /></el-icon>
@@ -161,6 +175,12 @@ const canManageContent = computed(() =>
   || authStore.hasPermission('blog:list'),
 )
 
+const canManageAi = computed(() =>
+  authStore.hasPermission('agent:statistics:view')
+  || authStore.hasPermission('agent:conversation:list')
+  || authStore.isAdmin,
+)
+
 const canManageSystem = computed(() =>
   authStore.hasPermission('user:list')
   || authStore.hasPermission('role:list')
@@ -168,7 +188,6 @@ const canManageSystem = computed(() =>
   || authStore.hasPermission('log:list')
   || authStore.hasPermission('log:module:list')
   || authStore.hasPermission('announcement:list')
-  || authStore.hasPermission('agent:conversation:list')
   || authStore.isAdmin,
 )
 

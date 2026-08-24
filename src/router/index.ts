@@ -35,6 +35,12 @@ const router = createRouter({
           meta: { title: '用户管理', perm: 'user:list' },
         },
         {
+          path: 'agent-statistics',
+          name: 'AgentStatistics',
+          component: () => import('../views/agent/AgentStatisticsView.vue'),
+          meta: { title: 'AI 统计', perm: 'agent:statistics:view' },
+        },
+        {
           path: 'agent-conversations',
           name: 'AgentConversations',
           component: () => import('../views/agent/AgentConversationView.vue'),
