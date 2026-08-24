@@ -5,6 +5,8 @@ export interface ApiResponse<T = any> {
   timestamp: number
 }
 
+export type ApiId = string | number
+
 export interface PageResult<T> {
   list: T[]
   total: number
@@ -15,7 +17,7 @@ export interface PageResult<T> {
 }
 
 export interface UserInfo {
-  id: number
+  id: ApiId
   username: string
   email: string | null
   phone: string | null
@@ -94,6 +96,54 @@ export interface UpdateProfileParams {
 export interface ChangePasswordParams {
   oldPassword: string
   newPassword: string
+}
+
+// ==================== 问题反馈 ====================
+export interface BugFeedback {
+  id: string | number
+  userId: string | number
+  username: string
+  title: string
+  content: string
+  pageUrl: string | null
+  contact: string | null
+  status: 0 | 1 | 2 | 3
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BugFeedbackQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  status?: number
+}
+
+// ==================== 系统公告 ====================
+export interface SystemAnnouncement {
+  id: ApiId
+  notificationId?: ApiId | null
+  title: string
+  content: string
+  important: boolean
+  enabled: boolean
+  creatorId: ApiId
+  creatorName: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SystemAnnouncementQuery {
+  page?: number
+  size?: number
+  keyword?: string
+  important?: boolean
+}
+
+export interface SystemAnnouncementCreateParams {
+  title: string
+  content: string
+  important: boolean
 }
 
 export interface Role {

@@ -68,6 +68,14 @@
             <el-icon><Document /></el-icon>
             <span>操作日志</span>
           </el-menu-item>
+          <el-menu-item index="/admin/feedback" v-if="authStore.isAdmin">
+            <el-icon><Message /></el-icon>
+            <span>反馈管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/announcements" v-if="authStore.isAdmin || authStore.hasPermission('announcement:list')">
+            <el-icon><Bell /></el-icon>
+            <span>系统公告</span>
+          </el-menu-item>
           <el-menu-item index="/admin/log-modules" v-if="authStore.hasPermission('log:module:list')">
             <el-icon><Tickets /></el-icon>
             <span>日志模块字典</span>
@@ -151,7 +159,9 @@ const canManageSystem = computed(() =>
   || authStore.hasPermission('role:list')
   || authStore.hasPermission('perm:list')
   || authStore.hasPermission('log:list')
-  || authStore.hasPermission('log:module:list'),
+  || authStore.hasPermission('log:module:list')
+  || authStore.hasPermission('announcement:list')
+  || authStore.isAdmin,
 )
 
 function handleLogout() {

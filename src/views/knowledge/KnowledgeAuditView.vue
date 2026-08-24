@@ -1,5 +1,27 @@
 <template>
   <div class="knowledge-audit">
+    <el-card class="audit-switch-card">
+      <div class="audit-switch-card__main">
+        <div>
+          <div class="audit-switch-card__label">题目审核策略</div>
+          <div class="audit-switch-card__title">
+            {{ auditEnabled ? '已开启审核' : '已关闭审核' }}
+          </div>
+          <p>
+            {{ auditEnabled ? '用户提交题目后进入待审核列表，由管理员审核通过后公开。' : '用户提交题目后直接公开，不进入审核队列。' }}
+          </p>
+        </div>
+        <el-switch
+          v-model="auditEnabled"
+          :loading="auditSwitchLoading"
+          inline-prompt
+          active-text="审核"
+          inactive-text="直发"
+          @change="handleAuditSwitchChange"
+        />
+      </div>
+    </el-card>
+
     <!-- 搜索区域 -->
     <el-card class="search-card">
       <el-form :inline="true" :model="query">
@@ -118,7 +140,14 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, RefreshRight } from '@element-plus/icons-vue'
 import { marked } from 'marked'
-import { getKnowledgePendingApi, approveKnowledgeApi, rejectKnowledgeApi, batchAuditApi } from '../../api'
+import {
+  getKnowledgePendingApi,
+  approveKnowledgeApi,
+  rejectKnowledgeApi,
+  batchAuditApi,
+  getKnowledgeAuditSwitchApi,
+  setKnowledgeAuditSwitchApi,
+} from '../../api'
 import type { Knowledge, KnowledgeQuery } from '../../types/api'
 
 const query = reactive<KnowledgeQuery>({ page: 1, size: 10 })
@@ -126,6 +155,32 @@ const list = ref<Knowledge[]>([])
 const total = ref(0)
 const loading = ref(false)
 const selectedIds = ref<number[]>([])
+const auditEnabled = ref(true)
+const auditSwitchLoading = ref(false)
+
+async function loadAuditSwitch() {
+  try {
+    const res = await getKnowledgeAuditSwitchApi()
+    auditEnabled.value = res.data.data ?? true
+  } catch {
+    auditEnabled.value = true
+  }
+}
+
+async function handleAuditSwitchChange(value: string | number | boolean) {
+  const next = Boolean(value)
+  const previous = !next
+  auditSwitchLoading.value = true
+  try {
+    const res = await setKnowledgeAuditSwitchApi(next)
+    auditEnabled.value = res.data.data ?? next
+    ElMessage.success(auditEnabled.value ? '题目审核已开启' : '题目审核已关闭，提交后将直接公开')
+  } catch {
+    auditEnabled.value = previous
+  } finally {
+    auditSwitchLoading.value = false
+  }
+}
 
 async function fetchList() {
   loading.value = true
@@ -222,10 +277,37 @@ const renderedContent = computed(() => {
   return marked(detail.value.content) as string
 })
 
-onMounted(fetchList)
+onMounted(() => {
+  loadAuditSwitch()
+  fetchList()
+})
 </script>
 
 <style scoped>
+.audit-switch-card { margin-bottom: 16px; }
+.audit-switch-card__main {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.audit-switch-card__label {
+  margin-bottom: 6px;
+  color: #409eff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.audit-switch-card__title {
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 800;
+}
+.audit-switch-card p {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
 .search-card { margin-bottom: 16px; }
 .table-card { }
 .card-header { display: flex; align-items: center; justify-content: space-between; }
@@ -259,4 +341,12 @@ onMounted(fetchList)
 .markdown-body :deep(table) { border-collapse: collapse; width: 100%; margin: 12px 0; }
 .markdown-body :deep(th), .markdown-body :deep(td) { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
 .markdown-body :deep(th) { background: #f5f7fa; }
+
+@media (max-width: 720px) {
+  .audit-switch-card__main {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
 </style>

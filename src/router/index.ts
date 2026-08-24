@@ -53,6 +53,18 @@ const router = createRouter({
           meta: { title: '操作日志', perm: 'log:list' },
         },
         {
+          path: 'feedback',
+          name: 'Feedback',
+          component: () => import('../views/feedback/FeedbackListView.vue'),
+          meta: { title: '反馈管理' },
+        },
+        {
+          path: 'announcements',
+          name: 'Announcements',
+          component: () => import('../views/announcement/AnnouncementListView.vue'),
+          meta: { title: '系统公告', perm: 'announcement:list' },
+        },
+        {
           path: 'log-modules',
           name: 'LogModules',
           component: () => import('../views/log/LogModuleView.vue'),
@@ -106,7 +118,7 @@ router.beforeEach((to, _from, next) => {
 
   if (store.accessToken && !isPublic && to.meta.perm) {
     const perm = to.meta.perm as string
-    if (!store.hasPermission(perm)) {
+    if (!store.isAdmin && !store.hasPermission(perm)) {
       next('/admin/dashboard')
       return
     }

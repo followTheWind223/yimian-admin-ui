@@ -1,6 +1,7 @@
 import request from '../utils/request'
 import type { ApiResponse } from '../types/api'
 import type {
+  ApiId,
   LoginParams,
   LoginResult,
   RegisterParams,
@@ -13,6 +14,11 @@ import type {
   AssignRoleParams,
   UpdateProfileParams,
   ChangePasswordParams,
+  BugFeedback,
+  BugFeedbackQuery,
+  SystemAnnouncement,
+  SystemAnnouncementCreateParams,
+  SystemAnnouncementQuery,
   Role,
   CreateRoleParams,
   UpdateRoleParams,
@@ -58,26 +64,46 @@ export function changePasswordApi(data: ChangePasswordParams) {
   return request.put<ApiResponse<null>>('/user/password', data)
 }
 
+// ==================== 问题反馈 ====================
+export function getBugFeedbackListApi(params: BugFeedbackQuery) {
+  return request.get<ApiResponse<PageResult<BugFeedback>>>('/admin/feedback', { params })
+}
+export function getBugFeedbackDetailApi(id: string | number) {
+  return request.get<ApiResponse<BugFeedback>>(`/admin/feedback/${id}`)
+}
+export function updateBugFeedbackStatusApi(id: string | number, status: number) {
+  return request.put<ApiResponse<BugFeedback>>(`/admin/feedback/${id}/status`, null, { params: { status } })
+}
+
+// ==================== 系统公告 ====================
+export function getSystemAnnouncementListApi(params: SystemAnnouncementQuery) {
+  return request.get<ApiResponse<PageResult<SystemAnnouncement>>>('/admin/announcements', { params })
+}
+
+export function publishSystemAnnouncementApi(data: SystemAnnouncementCreateParams) {
+  return request.post<ApiResponse<SystemAnnouncement>>('/admin/announcements', data)
+}
+
 // ==================== 用户管理 ====================
 export function getUserListApi(params: UserQuery) {
   return request.get<ApiResponse<PageResult<UserInfo>>>('/admin/users', { params })
 }
-export function getUserDetailApi(id: number) {
+export function getUserDetailApi(id: ApiId) {
   return request.get<ApiResponse<UserInfo>>(`/admin/users/${id}`)
 }
 export function createUserApi(data: CreateUserParams) {
   return request.post<ApiResponse<UserInfo>>('/admin/users', data)
 }
-export function updateUserApi(id: number, data: UpdateUserParams) {
+export function updateUserApi(id: ApiId, data: UpdateUserParams) {
   return request.put<ApiResponse<UserInfo>>(`/admin/users/${id}`, data)
 }
-export function resetPasswordApi(id: number, data: ResetPasswordParams) {
+export function resetPasswordApi(id: ApiId, data: ResetPasswordParams) {
   return request.put<ApiResponse<null>>(`/admin/users/${id}/password`, data)
 }
-export function deleteUserApi(id: number) {
+export function deleteUserApi(id: ApiId) {
   return request.delete<ApiResponse<null>>(`/admin/users/${id}`)
 }
-export function assignRolesApi(id: number, data: AssignRoleParams) {
+export function assignRolesApi(id: ApiId, data: AssignRoleParams) {
   return request.put<ApiResponse<UserInfo>>(`/admin/users/${id}/roles`, data)
 }
 
@@ -191,6 +217,12 @@ export function rejectKnowledgeApi(id: number, remark: string) {
 }
 export function batchAuditApi(data: BatchAuditParams) {
   return request.put<ApiResponse<number>>('/admin/knowledge/batch-audit', data)
+}
+export function getKnowledgeAuditSwitchApi() {
+  return request.get<ApiResponse<boolean>>('/knowledge/audit-switch')
+}
+export function setKnowledgeAuditSwitchApi(enabled: boolean) {
+  return request.put<ApiResponse<boolean>>('/knowledge/audit-switch', null, { params: { enabled } })
 }
 
 // ==================== 博客管理（管理员） ====================

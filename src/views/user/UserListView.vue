@@ -36,7 +36,13 @@
         </div>
       </template>
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column label="ID" width="132">
+          <template #default="{ row }">
+            <el-tooltip :content="String(row.id)" placement="top">
+              <span class="id-cell">{{ formatId(row.id) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="nickname" label="昵称" min-width="120" />
         <el-table-column prop="email" label="邮箱" min-width="160" />
@@ -152,12 +158,17 @@ import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Search, RefreshRight, Plus } from '@element-plus/icons-vue'
 import { getUserListApi, createUserApi, updateUserApi, deleteUserApi, resetPasswordApi, assignRolesApi } from '../../api'
-import type { UserInfo, UserQuery } from '../../types/api'
+import type { ApiId, UserInfo, UserQuery } from '../../types/api'
 
 const query = reactive<UserQuery>({ page: 1, size: 10 })
 const list = ref<UserInfo[]>([])
 const total = ref(0)
 const loading = ref(false)
+
+function formatId(id: ApiId) {
+  const text = String(id)
+  return text.length > 12 ? `${text.slice(0, 6)}...${text.slice(-4)}` : text
+}
 
 async function fetchList() {
   loading.value = true
@@ -181,7 +192,7 @@ function resetQuery() {
 // 新增/编辑
 const dialog = reactive({ visible: false, isEdit: false, loading: false })
 const formRef = ref<FormInstance>()
-const editId = ref<number | null>(null)
+const editId = ref<ApiId | null>(null)
 const form = reactive<any>({ username: '', password: '', nickname: '', email: '', phone: '', status: 1, roleCodes: [] })
 const formRules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -234,20 +245,26 @@ async function submitForm() {
     dialog.loading = false
   }
 }
-async function handleDelete(id: number) {
+async function handleDelete(id: ApiId) {
   await deleteUserApi(id)
   ElMessage.success('删除成功')
   fetchList()
 }
 
 // 分配角色
-const roleDialog = reactive({ visible: false, loading: false, roleCodes: [] as string[], userId: 0 })
+const roleDialog = reactive<{ visible: boolean; loading: boolean; roleCodes: string[]; userId: ApiId | null }>({
+  visible: false,
+  loading: false,
+  roleCodes: [],
+  userId: null,
+})
 function openRoles(row: UserInfo) {
   roleDialog.userId = row.id
   roleDialog.roleCodes = [...row.roles]
   roleDialog.visible = true
 }
 async function submitRoles() {
+  if (roleDialog.userId == null) return
   roleDialog.loading = true
   try {
     await assignRolesApi(roleDialog.userId, { roleCodes: roleDialog.roleCodes })
@@ -260,7 +277,12 @@ async function submitRoles() {
 }
 
 // 重置密码
-const pwdDialog = reactive({ visible: false, loading: false, newPassword: '', userId: 0 })
+const pwdDialog = reactive<{ visible: boolean; loading: boolean; newPassword: string; userId: ApiId | null }>({
+  visible: false,
+  loading: false,
+  newPassword: '',
+  userId: null,
+})
 const pwdFormRef = ref<FormInstance>()
 const pwdFormRules: FormRules = {
   newPassword: [{ required: true, message: '请输入新密码', trigger: 'blur' }, { min: 6, max: 32, message: '6-32 字符', trigger: 'blur' }],
@@ -272,7 +294,7 @@ function openResetPwd(row: UserInfo) {
 }
 async function submitResetPwd() {
   const valid = await pwdFormRef.value?.validate().catch(() => false)
-  if (!valid) return
+  if (!valid || pwdDialog.userId == null) return
   pwdDialog.loading = true
   try {
     await resetPasswordApi(pwdDialog.userId, { newPassword: pwdDialog.newPassword })
@@ -290,5 +312,17 @@ onMounted(fetchList)
 .search-card { margin-bottom: 16px; }
 .table-card { }
 .card-header { display: flex; align-items: center; justify-content: space-between; }
+.id-cell {
+  display: inline-block;
+  max-width: 108px;
+  overflow: hidden;
+  color: #606266;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 .pagination { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>
