@@ -125,6 +125,14 @@ export interface AgentProfileModel {
   status: number
 }
 
+export interface AgentProfileModelBinding {
+  modelCode: string
+  isDefault: boolean
+  userSelectable: boolean
+  fallbackPriority: number
+  status: 0 | 1
+}
+
 export type AgentStatisticsPeriod = 1 | 7 | 30
 
 export interface AgentUsageSummary {

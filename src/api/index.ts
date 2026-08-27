@@ -54,6 +54,7 @@ import type {
   AgentModelUpdateParams,
   AgentProfile,
   AgentProfileModel,
+  AgentProfileModelBinding,
 } from '../types/api'
 import type { Tag, CreateTagParams, UpdateTagParams } from './tag'
 
@@ -322,4 +323,8 @@ export function getAgentProfilesApi() {
 
 export function getAgentProfileModelsApi(profileCode: string) {
   return request.get<ApiResponse<AgentProfileModel[]>>(`/admin/agent/models/profiles/${profileCode}/models`)
+}
+
+export function updateAgentProfileModelsApi(profileCode: string, bindings: AgentProfileModelBinding[]) {
+  return request.put<ApiResponse<AgentProfileModel[]>>(`/admin/agent/models/profiles/${profileCode}/models`, { bindings })
 }

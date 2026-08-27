@@ -108,12 +108,12 @@
             <el-table-column label="允许用户选模型" width="150">
               <template #default="{ row }">{{ row.allowUserModelSelection ? '是' : '否' }}</template>
             </el-table-column>
-            <el-table-column label="可用模型" min-width="280">
+            <el-table-column label="可用模型" min-width="360">
               <template #default="{ row }">
-                <div class="model-tags">
-                  <el-tag v-for="item in profileModels[row.profileCode] || []" :key="item.modelCode" effect="plain">{{ item.modelDisplayName }}</el-tag>
-                  <span v-if="!profileModels[row.profileCode]?.length" class="muted">暂未绑定</span>
-                </div>
+                <el-select v-model="profileSelections[row.profileCode]" multiple collapse-tags collapse-tags-tooltip filterable placeholder="选择模型" style="width: 280px">
+                  <el-option v-for="model in models" :key="model.modelCode" :label="`${model.displayName} (${model.providerCode})`" :value="model.modelCode" />
+                </el-select>
+                <el-button v-if="canManage" link type="primary" :loading="profileSaving === row.profileCode" @click="saveProfileModels(row)">保存</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -162,6 +162,7 @@ import {
   getAgentProfilesApi,
   getAgentProvidersApi,
   testAgentProviderApi,
+  updateAgentProfileModelsApi,
   updateAgentModelApi,
   updateAgentProviderApi,
 } from '../../api'
@@ -171,6 +172,7 @@ import type {
   AgentModelUpdateParams,
   AgentProfile,
   AgentProfileModel,
+  AgentProfileModelBinding,
   AgentProvider,
   AgentProviderCreateParams,
   AgentProviderUpdateParams,
@@ -186,6 +188,8 @@ const providers = ref<AgentProvider[]>([])
 const models = ref<AgentModelDeployment[]>([])
 const profiles = ref<AgentProfile[]>([])
 const profileModels = ref<Record<string, AgentProfileModel[]>>({})
+const profileSelections = reactive<Record<string, string[]>>({})
+const profileSaving = ref<string | null>(null)
 
 const providerDialogVisible = ref(false)
 const editingProvider = ref<AgentProvider | null>(null)
@@ -219,10 +223,32 @@ async function loadAll() {
     profiles.value = profileResult.data.data
     const entries = await Promise.all(profiles.value.map(async profile => [profile.profileCode, (await getAgentProfileModelsApi(profile.profileCode)).data.data] as const))
     profileModels.value = Object.fromEntries(entries)
+    for (const [profileCode, bindings] of entries) profileSelections[profileCode] = bindings.map(item => item.modelCode)
   } catch {
     ElMessage.error('模型配置加载失败，请检查 Agent 服务状态')
   } finally {
     loading.value = false
+  }
+}
+
+async function saveProfileModels(profile: AgentProfile) {
+  const selected = profileSelections[profile.profileCode] || []
+  const current = profileModels.value[profile.profileCode] || []
+  const bindings: AgentProfileModelBinding[] = selected.map((modelCode, index) => {
+    const old = current.find(item => item.modelCode === modelCode)
+    return { modelCode, isDefault: old?.isDefault ?? index === 0, userSelectable: old?.userSelectable ?? profile.allowUserModelSelection, fallbackPriority: old?.fallbackPriority ?? index + 1, status: 1 }
+  })
+  if (bindings.length && !bindings.some(item => item.isDefault)) bindings[0].isDefault = true
+  if (bindings.filter(item => item.isDefault).length > 1) bindings.forEach((item, index) => { item.isDefault = index === 0 })
+  profileSaving.value = profile.profileCode
+  try {
+    const result = await updateAgentProfileModelsApi(profile.profileCode, bindings)
+    profileModels.value[profile.profileCode] = result.data.data
+    ElMessage.success('模型绑定已保存')
+  } catch {
+    ElMessage.error('模型绑定保存失败')
+  } finally {
+    profileSaving.value = null
   }
 }
 
