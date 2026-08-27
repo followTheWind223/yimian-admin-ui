@@ -305,6 +305,10 @@ export function testAgentProviderApi(id: number) {
   return request.post<ApiResponse<AgentProviderTestResult>>(`/admin/agent/models/providers/${id}/test`)
 }
 
+export function testAgentProviderConfigApi(data: AgentProviderCreateParams) {
+  return request.post<ApiResponse<AgentProviderTestResult>>('/admin/agent/models/providers/test', data)
+}
+
 export function getAgentModelsApi() {
   return request.get<ApiResponse<AgentModelDeployment[]>>('/admin/agent/models')
 }

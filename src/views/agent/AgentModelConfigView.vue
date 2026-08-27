@@ -130,7 +130,11 @@
         <el-form-item label="API Key" prop="apiKey"><el-input v-model="providerForm.apiKey" type="password" show-password autocomplete="new-password" :placeholder="editingProvider ? '留空表示保留当前密钥' : '请输入 API Key'" /></el-form-item>
         <el-form-item label="状态"><el-switch v-model="providerForm.enabled" active-text="启用" inactive-text="停用" /></el-form-item>
       </el-form>
-      <template #footer><el-button @click="providerDialogVisible = false">取消</el-button><el-button type="primary" :loading="saving" @click="saveProvider">保存</el-button></template>
+      <template #footer>
+        <el-button :loading="testingDraft" :disabled="!providerForm.apiKey && !editingProvider" @click="testCurrentProvider">测试当前密钥</el-button>
+        <el-button @click="providerDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="saveProvider">保存</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog v-model="modelDialogVisible" :title="editingModel ? '编辑模型' : '新增模型'" width="620px" destroy-on-close>
@@ -162,6 +166,7 @@ import {
   getAgentProfilesApi,
   getAgentProvidersApi,
   testAgentProviderApi,
+  testAgentProviderConfigApi,
   updateAgentProfileModelsApi,
   updateAgentModelApi,
   updateAgentProviderApi,
@@ -184,6 +189,7 @@ const activeTab = ref('providers')
 const loading = ref(false)
 const saving = ref(false)
 const testingId = ref<number | null>(null)
+const testingDraft = ref(false)
 const providers = ref<AgentProvider[]>([])
 const models = ref<AgentModelDeployment[]>([])
 const profiles = ref<AgentProfile[]>([])
@@ -290,6 +296,28 @@ async function testProvider(row: AgentProvider) {
     ElMessage.error('连接失败，请检查 Base URL 和 API Key')
   } finally {
     testingId.value = null
+  }
+}
+
+async function testCurrentProvider() {
+  if (!providerForm.apiKey && !editingProvider.value) return
+  testingDraft.value = true
+  try {
+    const result = editingProvider.value && !providerForm.apiKey
+      ? await testAgentProviderApi(editingProvider.value.id)
+      : await testAgentProviderConfigApi({
+          providerCode: providerForm.providerCode,
+          displayName: providerForm.displayName,
+          protocolType: providerForm.protocolType,
+          baseUrl: providerForm.baseUrl,
+          apiKey: providerForm.apiKey,
+          status: providerForm.enabled ? 1 : 0,
+        })
+    ElMessage.success(result.data.data.message || '密钥可用')
+  } catch {
+    ElMessage.error('密钥不可用，请检查 Base URL 和 API Key')
+  } finally {
+    testingDraft.value = false
   }
 }
 
