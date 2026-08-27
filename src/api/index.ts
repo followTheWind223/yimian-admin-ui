@@ -45,6 +45,15 @@ import type {
   AgentConversationQuery,
   AgentStatisticsPeriod,
   AgentUsageAnalytics,
+  AgentProvider,
+  AgentProviderCreateParams,
+  AgentProviderUpdateParams,
+  AgentProviderTestResult,
+  AgentModelDeployment,
+  AgentModelCreateParams,
+  AgentModelUpdateParams,
+  AgentProfile,
+  AgentProfileModel,
 } from '../types/api'
 import type { Tag, CreateTagParams, UpdateTagParams } from './tag'
 
@@ -276,4 +285,41 @@ export function getAgentUsageAnalyticsApi(days: AgentStatisticsPeriod) {
   return request.get<ApiResponse<AgentUsageAnalytics>>('/admin/agent/statistics/usage', {
     params: { days },
   })
+}
+
+// ==================== Agent 妯″瀷閰嶇疆 ====================
+export function getAgentProvidersApi() {
+  return request.get<ApiResponse<AgentProvider[]>>('/admin/agent/models/providers')
+}
+
+export function createAgentProviderApi(data: AgentProviderCreateParams) {
+  return request.post<ApiResponse<AgentProvider>>('/admin/agent/models/providers', data)
+}
+
+export function updateAgentProviderApi(id: number, data: AgentProviderUpdateParams) {
+  return request.put<ApiResponse<AgentProvider>>(`/admin/agent/models/providers/${id}`, data)
+}
+
+export function testAgentProviderApi(id: number) {
+  return request.post<ApiResponse<AgentProviderTestResult>>(`/admin/agent/models/providers/${id}/test`)
+}
+
+export function getAgentModelsApi() {
+  return request.get<ApiResponse<AgentModelDeployment[]>>('/admin/agent/models')
+}
+
+export function createAgentModelApi(data: AgentModelCreateParams) {
+  return request.post<ApiResponse<AgentModelDeployment>>('/admin/agent/models', data)
+}
+
+export function updateAgentModelApi(id: number, data: AgentModelUpdateParams) {
+  return request.put<ApiResponse<AgentModelDeployment>>(`/admin/agent/models/${id}`, data)
+}
+
+export function getAgentProfilesApi() {
+  return request.get<ApiResponse<AgentProfile[]>>('/admin/agent/models/profiles')
+}
+
+export function getAgentProfileModelsApi(profileCode: string) {
+  return request.get<ApiResponse<AgentProfileModel[]>>(`/admin/agent/models/profiles/${profileCode}/models`)
 }

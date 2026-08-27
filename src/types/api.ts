@@ -31,6 +31,100 @@ export interface AgentConversationStats {
   totalCostUsd: number
 }
 
+export interface AgentProvider {
+  id: number
+  providerCode: string
+  displayName: string
+  protocolType: 'openai_compatible' | 'anthropic' | string
+  baseUrl: string
+  credentialConfigured: boolean
+  credentialMasked: string | null
+  status: 0 | 1
+  configVersion: number
+  lastTestStatus: 'success' | 'failed' | string | null
+  lastTestMessage: string | null
+  lastTestAt: string | null
+}
+
+export interface AgentProviderCreateParams {
+  providerCode: string
+  displayName: string
+  protocolType: 'openai_compatible' | 'anthropic'
+  baseUrl: string
+  apiKey?: string
+  status: 0 | 1
+}
+
+export type AgentProviderUpdateParams = Partial<Omit<AgentProviderCreateParams, 'providerCode'>>
+
+export interface AgentProviderTestResult {
+  status: string
+  message: string
+  statusCode: number
+}
+
+export interface AgentModelDeployment {
+  id: number
+  modelCode: string
+  providerAccountId: number
+  providerCode: string
+  providerDisplayName: string
+  upstreamModelName: string
+  displayName: string
+  modelType: 'chat' | 'embedding' | 'rerank' | string
+  contextWindow: number
+  maxOutputTokens: number
+  capabilities: Record<string, unknown>
+  defaultParams: Record<string, unknown>
+  inputPrice: number
+  outputPrice: number
+  cachedInputPrice: number
+  reasoningPrice: number
+  status: 0 | 1
+  configVersion: number
+}
+
+export interface AgentModelCreateParams {
+  modelCode: string
+  providerAccountId: number
+  upstreamModelName: string
+  displayName: string
+  modelType: 'chat' | 'embedding' | 'rerank'
+  contextWindow: number
+  maxOutputTokens: number
+  capabilities?: Record<string, unknown>
+  defaultParams?: Record<string, unknown>
+  inputPrice: number
+  outputPrice: number
+  cachedInputPrice: number
+  reasoningPrice: number
+  status: 0 | 1
+}
+
+export type AgentModelUpdateParams = Partial<Omit<AgentModelCreateParams, 'modelCode'>> & { modelCode?: string }
+
+export interface AgentProfile {
+  id: number
+  profileCode: string
+  displayName: string
+  sessionType: string
+  promptVersion: string | null
+  allowUserModelSelection: boolean
+  status: number
+  configVersion: number
+}
+
+export interface AgentProfileModel {
+  profileCode: string
+  modelCode: string
+  modelDisplayName: string
+  providerCode: string
+  isDefault: boolean
+  userSelectable: boolean
+  fallbackPriority: number
+  status: number
+}
+
 export type AgentStatisticsPeriod = 1 | 7 | 30
 
 export interface AgentUsageSummary {

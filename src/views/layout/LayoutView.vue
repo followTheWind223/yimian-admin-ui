@@ -66,6 +66,13 @@
             <el-icon><ChatLineSquare /></el-icon>
             <span>会话审计</span>
           </el-menu-item>
+          <el-menu-item
+            index="/admin/agent-models"
+            v-if="authStore.isAdmin || authStore.hasPermission('agent:model:list')"
+          >
+            <el-icon><Setting /></el-icon>
+            <span>AI 模型配置</span>
+          </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="system" v-if="canManageSystem">
@@ -178,6 +185,8 @@ const canManageContent = computed(() =>
 const canManageAi = computed(() =>
   authStore.hasPermission('agent:statistics:view')
   || authStore.hasPermission('agent:conversation:list')
+  || authStore.hasPermission('agent:model:list')
+  || authStore.hasPermission('agent:model:manage')
   || authStore.isAdmin,
 )
 
